@@ -1,10 +1,7 @@
-# This is a basic workflow to help you get started with Actions
+name: style
 
-name: TestCoverage
-
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events but only for the main and dev branch
   push:
     branches: [main]
   pull_request:
@@ -25,8 +22,40 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
-      # Runs a set of commands using the runners shell
-      - name: Run tests
+      - name: Install dependencies
         run: |
+          python3 -m pip install --upgrade pip
           python3 -m pip install .
-          python3 -m pytest tests/
+      - name: Python Code Quality and Lint
+        # You may pin to the exact commit or the version.
+        # uses: ricardochaves/python-lint@32032eca67291cd71f88d79e61bc4b904ee03265
+        uses: ricardochaves/python-lint@v1.4.0
+        with:
+          # A list of all paths to test
+          python-root-list: "src/orqviz tests/orqviz"
+
+          use-pylint: false
+          use-pycodestyle: false
+          use-flake8: true
+          use-mypy: true
+          use-black: true
+          use-isort: true
+
+          # Extra options: pylint $(extra-pylint-options) $(python-root-list)
+          # extra-pylint-options: # optional, default is
+
+          # Extra options: pycodestyle $(extra-pycodestyle-options) $(python-root-list)
+          # extra-pycodestyle-options: # optional, default is
+
+          # Extra options: flake8 $(extra-flake8-options) $(python-root-list)
+          # Black's output doesn't pass all flake8 checks. We need to disable some of them.
+          extra-flake8-options: --ignore=E203,E266,F401,W503 --max-line-length=88
+
+          # Extra options: black --check $(extra-black-options) $(python-root-list)
+          extra-black-options: --check
+
+          # Extra options: mypy $(extra-mypy-options) $(python-root-list)
+          extra-mypy-options: --ignore-missing-imports --namespace-packages
+
+          # Extra options: isort -rc $(extra-isort-options) $(python-root-list) -c --diff
+          extra-isort-options: --check-only --filter-files --profile black
